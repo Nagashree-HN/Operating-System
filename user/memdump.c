@@ -61,4 +61,102 @@ void
 memdump(char *fmt, char *data, int len)
 {
   // your code goes here for task 04
+
+  int pos = 0;
+
+  // Go through each character in the format string
+  for (int i = 0; fmt[i] != '\0'; i++) {
+    char spec = fmt[i];
+
+    // 'i' reads the next 4 bytes as an integer
+    if (spec == 'i') {
+      if (pos + 4 > len) {
+        printf("memdump: not enough data for '%c'\n", spec);
+        return;
+      }
+
+      int value;
+      memmove(&value, data + pos, 4);
+
+      printf("%d\n", value);
+      pos += 4;
+    }
+
+    // 'p' reads the next 8 bytes and prints them in hexadecimal
+    else if (spec == 'p') {
+      if (pos + 8 > len) {
+        printf("memdump: not enough data for '%c'\n", spec);
+        return;
+      }
+
+      uint low;
+      uint high;
+
+      memmove(&low, data + pos, 4);
+      memmove(&high, data + pos + 4, 4);
+
+      // xv6 printf only prints 32 bits with %x,
+      // so print the upper and lower parts separately
+      printf("%x", high);
+      printf("%x\n", low);
+
+      pos += 8;
+    }
+
+    // 'h' reads the next 2 bytes as a short integer
+    else if (spec == 'h') {
+      if (pos + 2 > len) {
+        printf("memdump: not enough data for '%c'\n", spec);
+        return;
+      }
+
+      short value;
+      memmove(&value, data + pos, 2);
+
+      printf("%d\n", value);
+      pos += 2;
+    }
+
+    // 'c' reads the next byte as a character
+    else if (spec == 'c') {
+      if (pos + 1 > len) {
+        printf("memdump: not enough data for '%c'\n", spec);
+        return;
+      }
+
+      printf("%c\n", data[pos]);
+      pos += 1;
+    }
+
+    // 's' reads an 8-byte pointer to a string
+    else if (spec == 's') {
+      if (pos + 8 > len) {
+        printf("memdump: not enough data for '%c'\n", spec);
+        return;
+      }
+
+      char *str;
+      memmove(&str, data + pos, 8);
+
+      printf("%s\n", str);
+      pos += 8;
+    }
+
+    // 'S' prints the string stored directly in data
+    else if (spec == 'S') {
+
+      // Stop at the null character or the end of valid data
+      while (pos < len && data[pos] != '\0') {
+        printf("%c", data[pos]);
+        pos++;
+      }
+
+      printf("\n");
+
+      // Move past the null character if one was found
+      if (pos < len && data[pos] == '\0') {
+        pos++;
+      }
+    }
+  }
 }
